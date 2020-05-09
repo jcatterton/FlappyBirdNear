@@ -23,10 +23,13 @@ func Start() {
 }
 
 func run() {
+	linesVisible := false
+	brainVisible := true
+
 	cfg := pixelgl.WindowConfig{
-		Title: 	"Flappy Bird",
-		Bounds:	pixel.R(0, 0, 500, 750),
-		VSync:	true,
+		Title:  "Flappy Bird",
+		Bounds: pixel.R(0, 0, 500, 750),
+		VSync:  true,
 	}
 	win, err := pixelgl.NewWindow(cfg)
 	if err != nil {
@@ -43,6 +46,12 @@ func run() {
 		panic(err)
 	}
 
+	backgroundImage, err := loadPicture("./background.png")
+	if err != nil {
+		panic(err)
+	}
+	background := pixel.NewSprite(backgroundImage, backgroundImage.Bounds())
+
 	bird := Bird{
 		375,
 		0,
@@ -51,10 +60,10 @@ func run() {
 
 	pipes := make([]*Pipe, 6)
 	for i := range pipes {
-		if i % 2 == 0 {
-			pipes[i] = &Pipe{float64(rand.Intn(350) + 100), 600 + float64(200 * i), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
+		if i%2 == 0 {
+			pipes[i] = &Pipe{float64(rand.Intn(350) + 100), 600 + float64(200*i), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
 		} else {
-			pipes[i] = pipes[i - 1].CreateSisterPipe()
+			pipes[i] = pipes[i-1].CreateSisterPipe()
 		}
 	}
 
@@ -64,16 +73,22 @@ func run() {
 
 	for !win.Closed() {
 		for x := range pop.GetAllGenomes() {
-			dead := false
-			for !dead {
+			for !checkForCollisions(bird, pipes) {
+				if win.JustPressed(pixelgl.Key1) {
+					linesVisible = !linesVisible
+				}
+				if win.JustPressed(pixelgl.Key2) {
+					brainVisible = !brainVisible
+				}
+
 				win.Clear(colornames.Black)
 				if err := pop.GetAllGenomes()[x].TakeInput(
-				[]float64{
-					bird.GetYVel(),
-					bird.GetInformationOnNextPipes(pipes)[0],
-					bird.GetInformationOnNextPipes(pipes)[1],
-					bird.GetInformationOnNextPipes(pipes)[2],
-				}); err != nil {
+					[]float64{
+						bird.GetYVel(),
+						bird.GetInformationOnNextPipes(pipes)[0],
+						bird.GetInformationOnNextPipes(pipes)[1],
+						bird.GetInformationOnNextPipes(pipes)[2],
+					}); err != nil {
 					panic(err)
 				}
 
@@ -81,21 +96,17 @@ func run() {
 
 				output := pop.GetAllGenomes()[x].GetOutputs()[0]
 
-				if win.Pressed(pixelgl.KeyUp) {
-					bird.height++
-				}
-				if win.Pressed(pixelgl.KeyDown) {
-					bird.height--
-				}
-
-				if output > 0.5{
+				if output > 0.5 {
 					bird.Jump()
 				}
 
-				bird.Fall()
-				bird.Draw(win, pixel.IM.Moved(pixel.V(win.Bounds().W()/2, bird.height)))
+				background.Draw(win, pixel.IM.Moved(win.Bounds().Center()))
 
-				for i := range pipes{
+				bird.Fall()
+				bird.Draw(win, pixel.IM.Moved(pixel.V(win.Bounds().W()/2, bird.height)).
+					Rotated(pixel.V(win.Bounds().W()/2, bird.height), bird.yVel/35))
+
+				for i := range pipes {
 					pipes[i].Draw(win, pixel.IM)
 					pipes[i].MoveLeft()
 					if pipes[i].xPos <= -200 && i%2 == 0 {
@@ -103,49 +114,48 @@ func run() {
 						pipes[i+1] = pipes[i].CreateSisterPipe()
 					}
 				}
-				imd.Clear()
-				imd.Color = colornames.White
 
-				imd.Push(bird.Bounds().Center)
-				imd.Push(pixel.V(bird.Bounds().Center.X + bird.GetInformationOnNextPipes(pipes)[0], bird.GetHeight()))
-				imd.Line(2)
-				imd.Draw(win)
+				if linesVisible {
+					imd.Clear()
+					imd.Color = colornames.White
 
-				imd.Push(bird.Bounds().Center)
-				imd.Push(pixel.V(250, bird.Bounds().Center.Y + bird.Bounds().Radius + bird.GetInformationOnNextPipes(pipes)[1]))
-				imd.Line(2)
-				imd.Draw(win)
+					imd.Push(bird.Bounds().Center)
+					imd.Push(pixel.V(bird.Bounds().Center.X+bird.GetInformationOnNextPipes(pipes)[0], bird.GetHeight()))
+					imd.Line(2)
 
-				imd.Push(bird.Bounds().Center)
-				imd.Push(pixel.V(250, bird.Bounds().Center.Y - bird.Bounds().Radius + bird.GetInformationOnNextPipes(pipes)[2]))
-				imd.Line(2)
-				imd.Draw(win)
+					imd.Push(bird.Bounds().Center)
+					imd.Push(pixel.V(250, bird.Bounds().Center.Y+bird.Bounds().Radius+bird.GetInformationOnNextPipes(pipes)[1]))
+					imd.Line(2)
 
-				drawGenome(pop.GetAllGenomes()[x], win)
+					imd.Push(bird.Bounds().Center)
+					imd.Push(pixel.V(250, bird.Bounds().Center.Y-bird.Bounds().Radius+bird.GetInformationOnNextPipes(pipes)[2]))
+					imd.Line(2)
 
-				if checkForCollisions(bird, pipes){
-					dead = true
-					pop.GetAllGenomes()[x].SetFitness(float64(score))
-					log.Println(score)
-					score = 0
-					bird = Bird{
-						375,
-						0,
-						*pixel.NewSprite(birdImage, birdImage.Bounds()),
-					}
-					for i := range pipes {
-						if i % 2 == 0 {
-							pipes[i] = &Pipe{float64(rand.Intn(350) + 100), 600.0 + float64(200 * i), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
-						} else {
-							pipes[i] = pipes[i - 1].CreateSisterPipe()
-						}
-					}
+					imd.Draw(win)
 				}
 
+				if brainVisible {
+					drawGenome(pop.GetAllGenomes()[x], win)
+				}
 				score++
 
 				win.SetTitle("Flappy Bird - " + strconv.Itoa(score))
 				win.Update()
+			}
+			pop.GetAllGenomes()[x].SetFitness(float64(score))
+			log.Println(score)
+			score = 0
+			bird = Bird{
+				375,
+				0,
+				*pixel.NewSprite(birdImage, birdImage.Bounds()),
+			}
+			for i := range pipes {
+				if i%2 == 0 {
+					pipes[i] = &Pipe{float64(rand.Intn(350) + 100), 600.0 + float64(200*i), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
+				} else {
+					pipes[i] = pipes[i-1].CreateSisterPipe()
+				}
 			}
 		}
 		for x := range pop.GetSpecies() {
@@ -155,7 +165,7 @@ func run() {
 		pop.SetGrandChampion()
 		pop.ExtinctionEvent()
 		pop.Mutate()
-		log.Println(pop.GetGeneration() , " - ", pop.GetGrandChampion().GetFitness())
+		log.Println(pop.GetGeneration(), " - ", pop.GetGrandChampion().GetFitness())
 	}
 }
 
@@ -165,24 +175,11 @@ func drawGenome(g *Network.Genome, win *pixelgl.Window) {
 
 	imd := imdraw.New(nil)
 
+	w := win.Bounds().W() / 2
+	h := win.Bounds().H() / 3
+
 	for i := 0; i < g.GetLayers(); i++ {
 		for j := range g.GetNodesWithLayer(i + 1) {
-			basicTxt.Color = colornames.White
-			if g.GetNodesWithLayer(i + 1)[j].GetInnovationNumber() == 0 {
-				fmt.Fprintf(basicTxt, "yVel " + strconv.FormatFloat(g.GetNodesWithLayer(i + 1)[j].GetWeight(), 'f', 2, 64))
-			} else if g.GetNodesWithLayer(i + 1)[j].GetInnovationNumber() == 1 {
-				fmt.Fprintf(basicTxt, "distance next pipe " + strconv.FormatFloat(g.GetNodesWithLayer(i + 1)[j].GetWeight(), 'f', 2, 64))
-			} else if g.GetNodesWithLayer(i + 1)[j].GetInnovationNumber() == 2 {
-				fmt.Fprintf(basicTxt, "distance above " + strconv.FormatFloat(g.GetNodesWithLayer(i + 1)[j].GetWeight(), 'f', 2, 64))
-			} else if g.GetNodesWithLayer(i + 1)[j].GetInnovationNumber() == 3 {
-				fmt.Fprintf(basicTxt, "distance below " + strconv.FormatFloat(g.GetNodesWithLayer(i + 1)[j].GetWeight(), 'f', 2, 64))
-			}
-			w := win.Bounds().W()/2
-			h := win.Bounds().H()/3
-			basicTxt.Draw(win, pixel.IM.Moved(pixel.V(
-				(float64(i)+0.5)*(w/float64(g.GetLayers()))-1,
-				(float64(j)+0.5)*(h/float64(len(g.GetNodesWithLayer(i+1))))+20)))
-			basicTxt.Clear()
 			if g.GetNodesWithLayer(i + 1)[j].IsActivated() {
 				imd.Color = pixel.RGB(0, 1, 0)
 			} else {
@@ -192,6 +189,7 @@ func drawGenome(g *Network.Genome, win *pixelgl.Window) {
 				(float64(i)+0.5)*(w/float64(g.GetLayers())),
 				(float64(j)+0.5)*(h/float64(len(g.GetNodesWithLayer(i+1))))))
 			imd.Circle(5, 20)
+
 			for k := range g.GetNodesWithLayer(i + 1)[j].GetOutwardConnections() {
 				imd.Color = pixel.RGB(1, 1, 1)
 				imd.Push(
@@ -204,6 +202,16 @@ func drawGenome(g *Network.Genome, win *pixelgl.Window) {
 							g.GetNodesWithLayer(i + 1)[j].GetOutwardConnections()[k].GetNodeB()))+0.5)*(h/float64(len(g.GetNodesWithLayer(g.GetNodesWithLayer(i + 1)[j].GetOutwardConnections()[k].GetNodeB().GetLayer()))))))
 				imd.Line(2)
 			}
+
+			basicTxt.Color = colornames.White
+			_, err := fmt.Fprintf(basicTxt, strconv.Itoa(g.GetNodesWithLayer(i + 1)[j].GetInnovationNumber()))
+			if err != nil {
+				panic(err)
+			}
+			basicTxt.Draw(win, pixel.IM.Moved(pixel.V(
+				(float64(i)+0.5)*(w/float64(g.GetLayers()))-1,
+				(float64(j)+0.5)*(h/float64(len(g.GetNodesWithLayer(i+1))))+20)))
+			basicTxt.Clear()
 		}
 	}
 	imd.Draw(win)
@@ -214,7 +222,7 @@ func checkForCollisions(bird Bird, pipes []*Pipe) bool {
 		return true
 	}
 	for i := range pipes {
-		if bird.Bounds().IntersectRect(pipes[i].Bounds()).X != 0 || bird.Bounds().IntersectRect(pipes[i].Bounds()).Y != 0{
+		if bird.Bounds().IntersectRect(pipes[i].Bounds()).X != 0 || bird.Bounds().IntersectRect(pipes[i].Bounds()).Y != 0 {
 			return true
 		}
 	}
@@ -232,8 +240,4 @@ func loadPicture(path string) (pixel.Picture, error) {
 		return nil, err
 	}
 	return pixel.PictureDataFromImage(img), nil
-}
-
-func GetScore() int {
-	return score
 }

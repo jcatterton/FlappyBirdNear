@@ -22,6 +22,8 @@ github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGw
 github.com/jcatterton/GoNeat v0.0.0-20200508191419-3bf20125e530 h1:vtyQ9793TDqenvU9LdJLpMzCTtEVrCL//HYnJhhZg60=
 github.com/jcatterton/GoNeat v0.0.0-20200509183120-0f442c5c187b h1:6VYxeVZgLChTQivDMP5Qig5MhZ3BERloXD4RXDOCkHM=
 github.com/jcatterton/GoNeat v0.0.0-20200509183120-0f442c5c187b/go.mod h1:MzwUuCreiprYaCQiDKNUBujFRSvoUGDaBM1c448UkbY=
+github.com/jcatterton/GoNeat v0.0.0-20200509223440-693dcb494e12 h1:853yXjVdKuReLNqbTetNttpaZa67c+YYg/tGoLp863s=
+github.com/jcatterton/GoNeat v0.0.0-20200509223440-693dcb494e12/go.mod h1:MzwUuCreiprYaCQiDKNUBujFRSvoUGDaBM1c448UkbY=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=

@@ -3,9 +3,9 @@ package Game
 import "github.com/faiface/pixel"
 
 type Bird struct {
-	height		float64
-	yVel		float64
-	sprite		pixel.Sprite
+	height float64
+	yVel   float64
+	sprite pixel.Sprite
 }
 
 func (b *Bird) Draw(t pixel.Target, m pixel.Matrix) {
@@ -25,7 +25,9 @@ func (b *Bird) Fall() {
 	} else {
 		b.yVel = -50.0
 	}
+
 	b.height = b.height - (b.yVel * -0.2)
+
 	if b.height >= 720 {
 		b.height = 720
 	}
@@ -45,18 +47,9 @@ func (b *Bird) GetYVel() float64 {
 
 func (b *Bird) GetInformationOnNextPipes(pipes []*Pipe) []float64 {
 	for i := range pipes {
-		if pipes[i].xPos > 150 && pipes[i].xPos < 550 && i % 2 == 0{
-			return []float64{pipes[i].xPos - 300, pipes[i + 1].height - (b.height + b.Bounds().Radius), pipes[i].height - (b.height - b.Bounds().Radius)}
+		if pipes[i].xPos > 150 && pipes[i].xPos < 550 && i%2 == 0 {
+			return []float64{pipes[i].xPos - 300, pipes[i+1].height - (b.height + b.Bounds().Radius), pipes[i].height - (b.height - b.Bounds().Radius)}
 		}
 	}
 	return []float64{500.0, 100, -100}
-}
-
-func (b *Bird) GetDistanceFromLastPipe(pipes []*Pipe) float64 {
-	for i := range pipes {
-		if pipes[i].xPos < 250 && pipes[i].xPos > 0 {
-			return 250.0 - pipes[i].xPos
-		}
-	}
-	return 500
 }
