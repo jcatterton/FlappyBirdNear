@@ -69,7 +69,7 @@ func run() {
 
 	imd := imdraw.New(nil)
 
-	pop := Network.InitPopulation(4, 1)
+	pop := Network.InitPopulation(4, 1, 3, 5)
 
 	for !win.Closed() {
 		for x := range pop.GetAllGenomes() {

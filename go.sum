@@ -24,6 +24,8 @@ github.com/jcatterton/GoNeat v0.0.0-20200509183120-0f442c5c187b h1:6VYxeVZgLChTQ
 github.com/jcatterton/GoNeat v0.0.0-20200509183120-0f442c5c187b/go.mod h1:MzwUuCreiprYaCQiDKNUBujFRSvoUGDaBM1c448UkbY=
 github.com/jcatterton/GoNeat v0.0.0-20200509223440-693dcb494e12 h1:853yXjVdKuReLNqbTetNttpaZa67c+YYg/tGoLp863s=
 github.com/jcatterton/GoNeat v0.0.0-20200509223440-693dcb494e12/go.mod h1:MzwUuCreiprYaCQiDKNUBujFRSvoUGDaBM1c448UkbY=
+github.com/jcatterton/GoNeat v0.0.0-20200509232931-e90fde5acd7f h1:hPTEAU5Y9g0gXOXqt+lIqTgdCUS/5SPGbYHRJxH6MwA=
+github.com/jcatterton/GoNeat v0.0.0-20200509232931-e90fde5acd7f/go.mod h1:MzwUuCreiprYaCQiDKNUBujFRSvoUGDaBM1c448UkbY=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
