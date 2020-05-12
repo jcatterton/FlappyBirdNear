@@ -52,12 +52,6 @@ func run() {
 	}
 	background := pixel.NewSprite(backgroundImage, backgroundImage.Bounds())
 
-	/*bird := Bird{
-		375,
-		0,
-		*pixel.NewSprite(birdImage, birdImage.Bounds()),
-	}*/
-
 	pipes := make([]*Pipe, 6)
 	for i := range pipes {
 		if i%2 == 0 {
