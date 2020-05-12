@@ -6,6 +6,7 @@ type Bird struct {
 	height float64
 	yVel   float64
 	sprite pixel.Sprite
+	dead   bool
 }
 
 func (b *Bird) Draw(t pixel.Target, m pixel.Matrix) {
