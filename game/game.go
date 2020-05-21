@@ -63,7 +63,7 @@ func run() {
 
 	imd := imdraw.New(nil)
 
-	pop := Network.InitPopulation(4, 1, 3, 5)
+	pop := Network.InitPopulation(4, 1, 50)
 
 	birds := make([]Bird, len(pop.GetAllGenomes()))
 	for i := range birds {
@@ -78,13 +78,22 @@ func run() {
 
 		score++
 
-		win.SetTitle("Flappy Bird - " + strconv.Itoa(score))
+		win.SetTitle("Flappy Bird - Generation: " + strconv.Itoa(pop.GetGeneration()) + " - Fitness: " + strconv.Itoa(score))
 
 		if win.JustPressed(pixelgl.Key1) {
 			linesVisible = !linesVisible
 		}
 		if win.JustPressed(pixelgl.Key2) {
 			brainVisible = !brainVisible
+		}
+
+		for i := range pipes {
+			pipes[i].Draw(win, pixel.IM)
+			pipes[i].MoveLeft()
+			if pipes[i].xPos <= -200 && i%2 == 0 {
+				pipes[i] = &Pipe{float64(rand.Intn(350) + 100), float64(1000), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
+				pipes[i+1] = pipes[i].CreateSisterPipe()
+			}
 		}
 
 		for x := range pop.GetAllGenomes() {
@@ -127,41 +136,17 @@ func run() {
 
 					imd.Draw(win)
 				}
-			}
 
-			if brainVisible {
-				for i := range pop.GetAllGenomes() {
-					if !birds[i].dead {
-						drawGenome(pop.GetAllGenomes()[i], win)
-						break
-					}
+				if checkForCollisions(birds[x], pipes) {
+					pop.GetAllGenomes()[x].SetFitness(float64(score))
+					birds[x].dead = true
 				}
-			}
-
-			if checkForCollisions(birds[x], pipes) && !birds[x].dead {
-				pop.GetAllGenomes()[x].SetFitness(float64(score))
-				birds[x].dead = true
-			}
-		}
-
-		for i := range pipes {
-			pipes[i].Draw(win, pixel.IM)
-			pipes[i].MoveLeft()
-			if pipes[i].xPos <= -200 && i%2 == 0 {
-				pipes[i] = &Pipe{float64(rand.Intn(350) + 100), float64(1000), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
-				pipes[i+1] = pipes[i].CreateSisterPipe()
 			}
 		}
 
 		if allBirdsDead(birds) {
-			for x := range pop.GetSpecies() {
-				pop.GetSpecies()[x].SetChampion()
-				pop.GetSpecies()[x].CullTheWeak()
-				pop.GetSpecies()[x].OrderByFitness()
-			}
-			pop.SetGrandChampion()
-			pop.ExtinctionEvent()
-			pop.Mutate()
+			pop.NaturalSelection()
+
 			log.Println(pop.GetGeneration(), " - ", pop.GetGrandChampion().GetFitness())
 			score = 0
 
@@ -176,6 +161,15 @@ func run() {
 					pipes[i] = &Pipe{float64(rand.Intn(350) + 100), 600 + float64(200*i), true, *pixel.NewSprite(pipeImage, pipeImage.Bounds())}
 				} else {
 					pipes[i] = pipes[i-1].CreateSisterPipe()
+				}
+			}
+		}
+
+		if brainVisible {
+			for i := range pop.GetAllGenomes() {
+				if !birds[i].dead {
+					drawGenome(pop.GetAllGenomes()[i], win)
+					break
 				}
 			}
 		}
